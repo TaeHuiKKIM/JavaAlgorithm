@@ -1,56 +1,84 @@
 import java.util.Scanner;
 
 public class Main {
-	static int[][] board;
-	static String encoded;
-	static int index = 0;
+	static final int INF = 999;
+	static int n, m;
+	static int[][] D;
+	static int[][] P;
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 
-		if (!sc.hasNextInt()) return;
-		int n = sc.nextInt();
-		encoded = sc.next();
+		if (!sc.hasNext()) return;
+		n = sc.nextInt();
+		m = sc.nextInt();
 
-		board = new int[n][n];
+		D = new int[n + 1][n + 1];
+		P = new int[n + 1][n + 1];
 
-		decode(0, 0, n);
-
-		System.out.println(n);
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < n; j++) {
-				sb.append(board[i][j]);
-				if (j != n - 1) sb.append(" ");
+		for (int i = 1; i <= n; i++) {
+			for (int j = 1; j <= n; j++) {
+				if (i == j) D[i][j] = 0;
+				else D[i][j] = INF;
 			}
-			sb.append("\n");
 		}
-		System.out.print(sb.toString());
+
+		for (int i = 0; i < m; i++) {
+			int u = sc.nextInt();
+			int v = sc.nextInt();
+			int w = sc.nextInt();
+			D[u][v] = w;
+		}
+
+		for (int k = 1; k <= n; k++) {
+			for (int i = 1; i <= n; i++) {
+				for (int j = 1; j <= n; j++) {
+					if (D[i][k] + D[k][j] < D[i][j]) {
+						D[i][j] = D[i][k] + D[k][j];
+						P[i][j] = k;
+					}
+				}
+			}
+		}
+
+		printMatrix(D);
+		printMatrix(P);
+
+		if (sc.hasNextInt()) {
+			int k_queries = sc.nextInt();
+			for (int i = 0; i < k_queries; i++) {
+				int start = sc.nextInt();
+				int end = sc.nextInt();
+
+				if (D[start][end] >= INF) {
+					System.out.println("NONE");
+				} else {
+					if (start == end) {
+						System.out.println(start + " " + end);
+					} else {
+						System.out.print(start + " ");
+						printPath(start, end);
+						System.out.println(end);
+					}
+				}
+			}
+		}
 	}
 
-	public static void decode(int r, int c, int size) {
-		if (index >= encoded.length()) return;
-
-		char current = encoded.charAt(index++);
-
-		if (current == 'w') {
-			fill(r, c, size, 0);
-		} else if (current == 'b') {
-			fill(r, c, size, 1);
-		} else if (current == 'x') {
-			int half = size / 2;
-			decode(r, c, half);           // 1사분면
-			decode(r, c + half, half);    // 2사분면
-			decode(r + half, c, half);    // 3사분면
-			decode(r + half, c + half, half); // 4사분면
+	public static void printPath(int i, int j) {
+		if (P[i][j] != 0) {
+			printPath(i, P[i][j]);
+			System.out.print(P[i][j] + " ");
+			printPath(P[i][j], j);
 		}
 	}
 
-	public static void fill(int r, int c, int size, int value) {
-		for (int i = r; i < r + size; i++) {
-			for (int j = c; j < c + size; j++) {
-				board[i][j] = value;
+	public static void printMatrix(int[][] matrix) {
+		for (int i = 1; i <= n; i++) {
+			for (int j = 1; j <= n; j++) {
+				System.out.print(matrix[i][j] + (j == n ? "" : " "));
 			}
+			System.out.println();
 		}
 	}
 }
